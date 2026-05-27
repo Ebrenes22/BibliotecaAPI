@@ -1,6 +1,8 @@
-﻿using BibliotecaAPI.Datos;
+﻿using Azure.Core;
+using BibliotecaAPI.Datos;
 using BibliotecaAPI.Entidades;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaAPI.Controllers
 {
@@ -16,14 +18,24 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Autor> Get()
+        public async Task<IEnumerable<Autor>> Get()
         {
-            return new List<Autor>
-          {
-              new Autor{Id = 1, Nombre = "Felipe" },
-              new Autor{Id = 2, Nombre = "Claudia" }
-          };
+            return await context.Autores.ToListAsync();
         }
+
+        [HttpGet("{id:int}")] //etiqueta - api/autores/id
+        public async Task<ActionResult<Autor>>Get(int id)
+        {
+            var autor = await context.Autores.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (autor is null)
+            {
+                return NotFound();
+            }
+            
+            return autor;
+        }
+
 
         [HttpPost]
         public async Task<ActionResult> Post(Autor autor)
@@ -33,5 +45,22 @@ namespace BibliotecaAPI.Controllers
             return Ok();
 
         }
+
+        [HttpPut("{id:int}")] //api/autores/id
+
+        public async Task<ActionResult> Put (int id , Autor autor)
+        {
+            if (id !=autor.Id)
+            {
+                return BadRequest("Los ids deben de coicidir");
+
+            }
+
+            context.Update(autor); 
+            await context.SaveChangesAsync();
+            return Ok();
+        }
+
+
     }
 }
