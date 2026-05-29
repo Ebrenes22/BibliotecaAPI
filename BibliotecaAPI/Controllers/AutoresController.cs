@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using BibliotecaAPI.Datos;
+﻿using BibliotecaAPI.Datos;
 using BibliotecaAPI.Entidades;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +25,10 @@ namespace BibliotecaAPI.Controllers
         [HttpGet("{id:int}")] //etiqueta - api/autores/id
         public async Task<ActionResult<Autor>>Get(int id)
         {
-            var autor = await context.Autores.FirstOrDefaultAsync(x => x.Id == id);
+            var autor = await context.Autores
+                .AsNoTracking()
+                .Include(x => x.Libros)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (autor is null)
             {
@@ -42,7 +44,7 @@ namespace BibliotecaAPI.Controllers
         {
             context.Add(autor);
             await context.SaveChangesAsync();
-            return Ok();
+            return CreatedAtAction(nameof(Get), new { id = autor.Id }, autor);
 
         }
 

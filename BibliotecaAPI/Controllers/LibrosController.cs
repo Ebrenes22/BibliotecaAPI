@@ -24,10 +24,13 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpGet("{id:int}")] //etiqueta - api/libros/id
-
         public async Task<ActionResult<Libro>> Get (int id)
         {
-            var libro = await context.Libros.FirstOrDefaultAsync();
+            var libro = await context.Libros
+                .AsNoTracking()
+                .Include(x => x.Autor)
+                .FirstOrDefaultAsync(x => x.Id == id);
+               
 
             if (libro is null)
             {
